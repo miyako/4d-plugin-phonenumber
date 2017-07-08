@@ -36,3 +36,7 @@ json|TEXT|Parsed result
 ``region``: ``string`` Specifier for ``language``
 
 ``user_region``: ``string`` The region for the result. For example, some formatting may be abbreviated for numbers in the same region
+
+### Examples
+
+<img width="767" alt="2017-07-08 19 30 50" src="https://user-images.githubusercontent.com/1725068/27984649-60acdadc-6416-11e7-9b56-f74e1b1b804a.png">
