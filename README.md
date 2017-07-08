@@ -31,7 +31,7 @@ json|TEXT|Parsed result
 
 ``default_region``: ``string`` The region to assume in case the country code is missing
 
-``language``: ``string`` The locale for the result `description`` and ``descriptionForUserRegion``
+``language``: ``string`` The locale for the result ``description`` and ``descriptionForUserRegion``
 
 ``region``: ``string`` Specifier for ``language``
 
