@@ -17,6 +17,10 @@ Only the ``PhoneNumberOfflineGeocoder`` feature is available. It seems ``PhoneNu
 
 ![preemption xx](https://user-images.githubusercontent.com/1725068/41327179-4e839948-6efd-11e8-982b-a670d511e04f.png)
 
+### Releases
+
+[2.0](https://github.com/miyako/4d-plugin-phonenumber/releases/tag/2.0)
+
 ## Syntax
 
 ```
