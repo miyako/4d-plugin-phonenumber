@@ -19,7 +19,7 @@ Only the ``PhoneNumberOfflineGeocoder`` feature is available. It seems ``PhoneNu
 
 ### Releases
 
-[2.0](https://github.com/miyako/4d-plugin-phonenumber/releases/tag/2.0)
+[2.1](https://github.com/miyako/4d-plugin-phonenumber/releases/tag/2.1)
 
 ## Syntax
 
