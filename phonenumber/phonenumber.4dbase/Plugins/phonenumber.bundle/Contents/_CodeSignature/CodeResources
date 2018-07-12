@@ -100,7 +100,7 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			baOm1lbchYwYIFIibD9Nuzmw9is=
+			nk0VEi5BdH0kDXJ4cpL5q6/VCek=
 			</data>
 			<key>optional</key>
 			<true/>
@@ -380,11 +380,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			baOm1lbchYwYIFIibD9Nuzmw9is=
+			nk0VEi5BdH0kDXJ4cpL5q6/VCek=
 			</data>
 			<key>hash2</key>
 			<data>
-			U8PvLp3agVlOGruZNi7GQFMzU3i0SSJzYxc7T5Y542M=
+			QzvWPmYRWKxGFRZjit9Gd54cNLLf0xzHpdCOawrs5Jc=
 			</data>
 			<key>optional</key>
 			<true/>
@@ -426,7 +426,7 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			oEAXu8A7jDVZ9gb6BJ9Oe+reaRY=
+			F7TJ5GWBOjsJY9RgMDnyzuSsAsY=
 			</data>
 			<key>requirement</key>
 			<string>identifier manifest and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = Y69CWUC25B</string>
@@ -449,6 +449,11 @@
 			<true/>
 			<key>weight</key>
 			<real>1100</real>
+		</dict>
+		<key>^Resources/Base\.lproj/</key>
+		<dict>
+			<key>weight</key>
+			<real>1010</real>
 		</dict>
 		<key>^version.plist$</key>
 		<true/>
@@ -508,6 +513,11 @@
 			<true/>
 			<key>weight</key>
 			<real>1100</real>
+		</dict>
+		<key>^Resources/Base\.lproj/</key>
+		<dict>
+			<key>weight</key>
+			<real>1010</real>
 		</dict>
 		<key>^[^/]+$</key>
 		<dict>

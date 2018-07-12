@@ -13,6 +13,9 @@
 #include "phonenumbers/geocoding/phonenumber_offline_geocoder.h"
 
 #include "libjson/libjson.h"
+#include "libjson_methods.h"
+
+#include <mutex>
 
 // --- Phone Number
 void Parse_phone_number(sLONG_PTR *pResult, PackagePtr pParams);
