@@ -1,11 +1,11 @@
-{
-    "name": "phonenumber",
-    "id": 20000,
-    "commands": [
-                 {
-                 "theme": "Phone Number",
-                 "syntax": "Parse phone number(&T;&T):T",
-                 "threadSafe": true
-                 }
-                 ]
+﻿{
+	"name": "phonenumber",
+	"id": 20000,
+	"commands": [
+							 {
+							 "theme": "Phone Number",
+							 "syntax": "Parse phone number(&T;&T):T",
+							 "threadSafe": false
+							 }
+							 ]
 }
