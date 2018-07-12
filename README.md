@@ -21,6 +21,8 @@ Only the ``PhoneNumberOfflineGeocoder`` feature is available. It seems ``PhoneNu
 
 [2.1](https://github.com/miyako/4d-plugin-phonenumber/releases/tag/2.1)
 
+* please use the release link, the repository does not contain the pre-built plugin because it is too large
+
 ## Syntax
 
 ```
