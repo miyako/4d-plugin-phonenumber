@@ -100,7 +100,7 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			baOm1lbchYwYIFIibD9Nuzmw9is=
+			6LtsAfLF5c2uX69D8oXwWy7wdzs=
 			</data>
 			<key>optional</key>
 			<true/>
@@ -380,11 +380,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			baOm1lbchYwYIFIibD9Nuzmw9is=
+			6LtsAfLF5c2uX69D8oXwWy7wdzs=
 			</data>
 			<key>hash2</key>
 			<data>
-			U8PvLp3agVlOGruZNi7GQFMzU3i0SSJzYxc7T5Y542M=
+			fBbMTG5GO6cjmSRarkezDnUQdyQEohQKmu73fuwQ6Fs=
 			</data>
 			<key>optional</key>
 			<true/>
@@ -404,29 +404,29 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			8WH79l2tgViHfCYSUBu+HCIQ5Es=
+			9oPz1S2YYVHD6nVD1OGaAXscl64=
 			</data>
 			<key>hash2</key>
 			<data>
-			rp5mwPoToTOMBrO5g9ATVRBDkkR1XpJE6MF06FX5mo0=
+			rchVC50pQrZqKRkTuCtpAUSI1Kd2dXJfQw4MO8Mv7t4=
 			</data>
 		</dict>
 		<key>Windows64/phonenumber.4DX</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			r1aAHLsl1HqPOxOjnnlVMBT8weQ=
+			XIdRzwnV71hh9oAq3cExfiYhWek=
 			</data>
 			<key>hash2</key>
 			<data>
-			D81BlAXC8IYBjKsGDu0nx8Zm3OxlDG6/r2pFvj/FY7A=
+			PqZmXQd8lATby7IADfmK5w/qYfW9XHGueQfMG6FYT8k=
 			</data>
 		</dict>
 		<key>manifest.json</key>
 		<dict>
 			<key>cdhash</key>
 			<data>
-			oEAXu8A7jDVZ9gb6BJ9Oe+reaRY=
+			F7TJ5GWBOjsJY9RgMDnyzuSsAsY=
 			</data>
 			<key>requirement</key>
 			<string>identifier manifest and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = Y69CWUC25B</string>
@@ -449,6 +449,11 @@
 			<true/>
 			<key>weight</key>
 			<real>1100</real>
+		</dict>
+		<key>^Resources/Base\.lproj/</key>
+		<dict>
+			<key>weight</key>
+			<real>1010</real>
 		</dict>
 		<key>^version.plist$</key>
 		<true/>
@@ -508,6 +513,11 @@
 			<true/>
 			<key>weight</key>
 			<real>1100</real>
+		</dict>
+		<key>^Resources/Base\.lproj/</key>
+		<dict>
+			<key>weight</key>
+			<real>1010</real>
 		</dict>
 		<key>^[^/]+$</key>
 		<dict>
