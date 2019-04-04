@@ -198,9 +198,11 @@ void Parse_phone_number(sLONG_PTR *pResult, PackagePtr pParams)
     string language;
     string region;
 	string phonenumber;
+    string options;
     C_TEXT returnValue;
     
 	get_text_param(pParams, 1, phonenumber);
+    get_text_param(pParams, 2, options);
     
 #if USE_JSONCPP
     Json::Value root;
@@ -208,8 +210,8 @@ void Parse_phone_number(sLONG_PTR *pResult, PackagePtr pParams)
     std::string errors;
     
     Json::CharReader *reader = builder.newCharReader();
-    bool parse = reader->parse(phonenumber.c_str(),
-                               phonenumber.c_str() + phonenumber.size(),
+    bool parse = reader->parse(options.c_str(),
+                               options.c_str() + options.size(),
                                &root,
                                &errors);
     delete reader;
