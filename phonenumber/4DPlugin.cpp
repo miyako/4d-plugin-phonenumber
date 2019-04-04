@@ -8,14 +8,38 @@
  #
  # --------------------------------------------------------------------------------*/
 
-
-#include "4DPluginAPI.h"
 #include "4DPlugin.h"
 
-std::mutex mutexJson;
+#if USE_JSONCPP
+void convertFromString(std::string &fromString, CUTF16String &toString) {
+#ifdef _WIN32
+    int len = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)fromString.c_str(), fromString.length(), NULL, 0);
+    
+    if(len){
+        std::vector<uint8_t> buf((len + 1) * sizeof(PA_Unichar));
+        if(MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)fromString.c_str(), fromString.length(), (LPWSTR)&buf[0], len)){
+            toString = CUTF16String((const PA_Unichar *)&buf[0]);
+        }
+    }else{
+        toString = CUTF16String((const PA_Unichar *)L"\0\0");
+    }
+#else
+    CFStringRef str = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)fromString.c_str(), fromString.length(), kCFStringEncodingUTF8, true);
+    if(str){
+        int len = CFStringGetLength(str);
+        std::vector<uint8_t> buf((len+1) * sizeof(PA_Unichar));
+        CFStringGetCharacters(str, CFRangeMake(0, len), (UniChar *)&buf[0]);
+        toString = CUTF16String((const PA_Unichar *)&buf[0]);
+        CFRelease(str);
+    }
+#endif
+}
 
-void PluginMain(PA_long32 selector, PA_PluginParameters params)
-{
+#else
+std::mutex mutexJson;
+#endif
+
+void PluginMain(PA_long32 selector, PA_PluginParameters params) {
 	try
 	{
 		PA_long32 pProcNum = selector;
@@ -30,8 +54,7 @@ void PluginMain(PA_long32 selector, PA_PluginParameters params)
 	}
 }
 
-void CommandDispatcher (PA_long32 pProcNum, sLONG_PTR *pResult, PackagePtr pParams)
-{
+void CommandDispatcher (PA_long32 pProcNum, sLONG_PTR *pResult, PackagePtr pParams) {
 	switch(pProcNum)
 	{
 // --- Phone Number
@@ -49,45 +72,112 @@ using namespace std;
 
 #pragma mark JSON
 
-JSONNODE *json_get_text_param(PackagePtr pParams, uint16_t index)
-{
-	C_TEXT t;
-	t.fromParamAtIndex(pParams, index);
-	
+#if USE_JSONCPP
+
+#else
+JSONNODE *json_get_text_param(PackagePtr pParams, uint16_t index) {
+    C_TEXT t;
+    t.fromParamAtIndex(pParams, index);
+    
     CUTF8String value;
     t.copyUTF8String(&value);
     
-	wstring u32;
+    wstring u32;
     json_wconv((const char *)value.c_str(), u32);
     
-	return json_parse((json_const json_char *)u32.c_str());
+    return json_parse((json_const json_char *)u32.c_str());
 }
 
-BOOL json_get_string_property(JSONNODE *json, const wchar_t *name, string &value)
-{
-	value = (const char*)"";
-	
-	if(json)
-	{
-		JSONNODE *node = json_get(json, name);
-		if(node)
-		{
-			json_char *s =json_as_string(node);
-			std::wstring wstr = std::wstring(s);
+BOOL json_get_string_property(JSONNODE *json, const wchar_t *name, string &value) {
+    value = (const char*)"";
+    
+    if(json)
+    {
+        JSONNODE *node = json_get(json, name);
+        if(node)
+        {
+            json_char *s =json_as_string(node);
+            std::wstring wstr = std::wstring(s);
             CUTF8String _value;
             json_wconv(wstr.c_str(), &_value);
-			value = string((const char *)_value.c_str());//don't pass length, trin trailing nulls
-			json_free(s);
-		}
-	}
-	
-	return !!value.length();
+            value = string((const char *)_value.c_str());//don't pass length, trin trailing nulls
+            json_free(s);
+        }
+    }
+    
+    return !!value.length();
+}
+
+#endif
+
+typedef enum{
+    
+    phonenumber_option_none = 0,
+    phonenumber_option_language = 1,
+    phonenumber_option_region = 2,
+    phonenumber_option_user_region = 3,
+    phonenumber_option_default_region = 4,
+    phonenumber_option_last = 5
+    
+}phonenumber_option;
+
+#if USE_JSONCPP
+phonenumber_option json_get_option_name(Json::Value::const_iterator n)
+#else
+phonenumber_option json_get_option_name(JSONNODE *n)
+#endif
+{
+    phonenumber_option v = (phonenumber_option)0;
+    
+#if USE_JSONCPP
+#else
+    if(n)
+    {
+#endif
+        
+#if USE_JSONCPP
+        JSONCPP_STRING s = n.name();
+#else
+        json_char *name = json_name(n);
+#endif
+        
+#if USE_JSONCPP
+        if (s.length())
+#else
+        if (name)
+#endif
+        {
+            
+#if USE_JSONCPP
+#define CHECK_CURLOPT(__a,__b) if(s==__a){v=(phonenumber_option)__b;goto json_get_option_name_exit;}
+#else
+            std::wstring s = std::wstring((const wchar_t *)name);
+#define CHECK_CURLOPT(__a,__b) if(s.compare(L__a)==0){v=__b;goto json_get_option_name_exit;}
+#endif
+
+            CHECK_CURLOPT("language",phonenumber_option_language)
+            CHECK_CURLOPT("region",phonenumber_option_region)
+            CHECK_CURLOPT("user_region",phonenumber_option_user_region)
+            CHECK_CURLOPT("default_region",phonenumber_option_default_region)
+            
+        json_get_option_name_exit:
+#if USE_JSONCPP
+            (void)0;
+#else
+            json_free(name);
+#endif
+        }
+#if USE_JSONCPP
+#else
+    }
+#endif
+    
+    return v;
 }
 
 using namespace i18n::phonenumbers;
 
-void get_text_param(PackagePtr pParams, uint16_t index, string &value)
-{
+void get_text_param(PackagePtr pParams, uint16_t index, string &value) {
 	C_TEXT Param;
 	Param.fromParamAtIndex(pParams, index);
 	CUTF8String _value;
@@ -100,43 +190,89 @@ void Parse_phone_number(sLONG_PTR *pResult, PackagePtr pParams)
 	//instances
 	PhoneNumberUtil *phoneUtil = PhoneNumberUtil::GetInstance();
 	PhoneNumberOfflineGeocoder geocoder;
+    
 	//default params
 	Locale locale = Locale::getEnglish();
 	string user_region;
 	string default_region = "ZZ";
-	C_TEXT returnValue;
-	
+    string language;
+    string region;
 	string phonenumber;
+    C_TEXT returnValue;
+    
 	get_text_param(pParams, 1, phonenumber);
     
+#if USE_JSONCPP
+    Json::Value root;
+    Json::CharReaderBuilder builder;
+    std::string errors;
+    
+    Json::CharReader *reader = builder.newCharReader();
+    bool parse = reader->parse(phonenumber.c_str(),
+                               phonenumber.c_str() + phonenumber.size(),
+                               &root,
+                               &errors);
+    delete reader;
+    
+    if(parse)
+    {
+        if(root.isObject())
+        {
+            for(Json::Value::const_iterator it = root.begin() ; it != root.end() ; it++)
+            {
+                phonenumber_option curl_option = json_get_option_name(it);
+                
+                switch (curl_option)
+                {
+                    case phonenumber_option_language:
+                        language = it->asString();
+                        locale = Locale(language.c_str(), region.length() ? region.c_str() : 0);
+                    break;
+                    case phonenumber_option_region:
+                        region = it->asString();
+                        locale = Locale(language.c_str(), region.length() ? region.c_str() : 0);
+                    break;
+                    case phonenumber_option_user_region:
+                        user_region = it->asString();
+                    break;
+                    case phonenumber_option_default_region:
+                        default_region = it->asString();
+                    break;
+                    default:
+                    break;
+                }
+            }
+        }
+    }
+#else
     std::lock_guard<std::mutex> lock(mutexJson);
     
-	JSONNODE *json = json_get_text_param(pParams, 2);
+    JSONNODE *json = json_get_text_param(pParams, 2);
+    
+    if(json)
+    {
+        //custom locale
+        if(json_get_string_property(json, L"language", language))
+        {
+            if(json_get_string_property(json, L"region", region))
+            {
+                locale = Locale(language.c_str(), region.c_str());
+            }else
+            {
+                locale = Locale(language.c_str());
+            }
+        }
+        
+        //custom user region
+        json_get_string_property(json, L"user_region", user_region);
+        
+        //custom default region
+        json_get_string_property(json, L"default_region", default_region);
+        
+        json_delete(json);
+    }
+#endif
 	
-	if(json)
-	{
-		//custom locale
-		string language, region;
-		if(json_get_string_property(json, L"language", language))
-		{
-			if(json_get_string_property(json, L"region", region))
-			{
-				locale = Locale(language.c_str(), region.c_str());
-			}else
-			{
-				locale = Locale(language.c_str());
-			}
-		}
-		
-		//custom user region
-		json_get_string_property(json, L"user_region", user_region);
-
-		//custom default region
-		json_get_string_property(json, L"default_region", default_region);
-		
-		json_delete(json);
-	}
-
 	string description, description_local,
 	formatted_number_INTERNATIONAL,
 	formatted_number_NATIONAL,
@@ -173,65 +309,136 @@ void Parse_phone_number(sLONG_PTR *pResult, PackagePtr pParams)
 		
 		number_type = phoneUtil->GetNumberType(phoneNumberProto);
 		
-		JSONNODE *info = json_new(JSON_NODE);
+#if USE_JSONCPP
+        Json::Value info;
+        
+        info["description"] = description;
+        info["descriptionForUserRegion"] = description_local;
+        
+        switch (number_type)
+        {
+            case PhoneNumberUtil::PhoneNumberType::FIXED_LINE:
+            info["phoneNumberType"] = "FIXED_LINE";
+            break;
+            
+            case PhoneNumberUtil::PhoneNumberType::MOBILE:
+            info["phoneNumberType"] = "MOBILE";
+            break;
 
-		json_set_s_for_key(info, L"description", description.c_str());
-		json_set_s_for_key(info, L"descriptionForUserRegion", description_local.c_str());
-
-		
-		switch (number_type)
-		{
-			case PhoneNumberUtil::PhoneNumberType::FIXED_LINE:
-				json_set_s_for_key(info, L"phoneNumberType", "FIXED_LINE");
-    break;
-			case PhoneNumberUtil::PhoneNumberType::MOBILE:
-				json_set_s_for_key(info, L"phoneNumberType", "MOBILE");
-    break;
-			case PhoneNumberUtil::PhoneNumberType::FIXED_LINE_OR_MOBILE:
-				json_set_s_for_key(info, L"phoneNumberType", "FIXED_LINE_OR_MOBILE");
-    break;
-			case PhoneNumberUtil::PhoneNumberType::TOLL_FREE:
-				json_set_s_for_key(info, L"phoneNumberType", "TOLL_FREE");
-    break;
-			case PhoneNumberUtil::PhoneNumberType::PREMIUM_RATE:
-				json_set_s_for_key(info, L"phoneNumberType", "PREMIUM_RATE");
-    break;
-			case PhoneNumberUtil::PhoneNumberType::SHARED_COST:
-				json_set_s_for_key(info, L"phoneNumberType", "SHARED_COST");
-    break;
-			case PhoneNumberUtil::PhoneNumberType::VOIP:
-				json_set_s_for_key(info, L"phoneNumberType", "VOIP");
-    break;
-			case PhoneNumberUtil::PhoneNumberType::PERSONAL_NUMBER:
-				json_set_s_for_key(info, L"phoneNumberType", "PERSONAL_NUMBER");
-    break;
-			case PhoneNumberUtil::PhoneNumberType::PAGER:
-				json_set_s_for_key(info, L"phoneNumberType", "PAGER");
-    break;
-			case PhoneNumberUtil::PhoneNumberType::UAN:
-				json_set_s_for_key(info, L"phoneNumberType", "UAN");
-    break;
-			case PhoneNumberUtil::PhoneNumberType::VOICEMAIL:
-				json_set_s_for_key(info, L"phoneNumberType", "VOICEMAIL");
-    break;
-			default://UNKNOWN
-				json_set_s_for_key(info, L"phoneNumberType", "UNKNOWN");
-    break;
-		}
-		
-		json_set_s_for_key(info, L"INTERNATIONAL", formatted_number_INTERNATIONAL.c_str());
-		json_set_s_for_key(info, L"NATIONAL", formatted_number_NATIONAL.c_str());
-		json_set_s_for_key(info, L"RFC3966", formatted_number_RFC3966.c_str());
-		json_set_s_for_key(info, L"E164", formatted_number_E164.c_str());
+            case PhoneNumberUtil::PhoneNumberType::FIXED_LINE_OR_MOBILE:
+            info["phoneNumberType"] = "FIXED_LINE_OR_MOBILE";
+            break;
+            
+            case PhoneNumberUtil::PhoneNumberType::TOLL_FREE:
+            info["phoneNumberType"] = "TOLL_FREE";
+            break;
+            case PhoneNumberUtil::PhoneNumberType::PREMIUM_RATE:
+            info["phoneNumberType"] = "PREMIUM_RATE";
+            break;
+            
+            case PhoneNumberUtil::PhoneNumberType::SHARED_COST:
+            info["phoneNumberType"] = "SHARED_COST";
+            break;
+            
+            case PhoneNumberUtil::PhoneNumberType::VOIP:
+            info["phoneNumberType"] = "VOIP";
+            break;
+            
+            case PhoneNumberUtil::PhoneNumberType::PERSONAL_NUMBER:
+            info["phoneNumberType"] = "PERSONAL_NUMBER";
+            break;
+            
+            case PhoneNumberUtil::PhoneNumberType::PAGER:
+            info["phoneNumberType"] = "PAGER";
+            break;
+            
+            case PhoneNumberUtil::PhoneNumberType::UAN:
+            info["phoneNumberType"] = "UAN";
+            break;
+            
+            case PhoneNumberUtil::PhoneNumberType::VOICEMAIL:
+            info["phoneNumberType"] = "VOICEMAIL";
+            break;
+            
+            default://UNKNOWN
+            info["phoneNumberType"] = "UNKNOWN";
+            break;
+        }
+        
+        info["INTERNATIONAL"] = formatted_number_INTERNATIONAL;
+        info["NATIONAL"] = formatted_number_NATIONAL;
+        info["RFC3966"] = formatted_number_RFC3966;
+        info["E164"] = formatted_number_E164;
+        
+        Json::StyledWriter writer;
+        std::string infoJson = writer.write(info);
+        CUTF16String json;
+        convertFromString(infoJson, json);
+        returnValue.setUTF16String(&json);
+        
+#else
+        JSONNODE *info = json_new(JSON_NODE);
+        
+        json_set_s_for_key(info, L"description", description.c_str());
+        json_set_s_for_key(info, L"descriptionForUserRegion", description_local.c_str());
+        
+        switch (number_type)
+        {
+            case PhoneNumberUtil::PhoneNumberType::FIXED_LINE:
+            json_set_s_for_key(info, L"phoneNumberType", "FIXED_LINE");
+            break;
+            case PhoneNumberUtil::PhoneNumberType::MOBILE:
+            json_set_s_for_key(info, L"phoneNumberType", "MOBILE");
+            break;
+            case PhoneNumberUtil::PhoneNumberType::FIXED_LINE_OR_MOBILE:
+            json_set_s_for_key(info, L"phoneNumberType", "FIXED_LINE_OR_MOBILE");
+            break;
+            case PhoneNumberUtil::PhoneNumberType::TOLL_FREE:
+            json_set_s_for_key(info, L"phoneNumberType", "TOLL_FREE");
+            break;
+            case PhoneNumberUtil::PhoneNumberType::PREMIUM_RATE:
+            json_set_s_for_key(info, L"phoneNumberType", "PREMIUM_RATE");
+            break;
+            case PhoneNumberUtil::PhoneNumberType::SHARED_COST:
+            json_set_s_for_key(info, L"phoneNumberType", "SHARED_COST");
+            break;
+            case PhoneNumberUtil::PhoneNumberType::VOIP:
+            json_set_s_for_key(info, L"phoneNumberType", "VOIP");
+            break;
+            case PhoneNumberUtil::PhoneNumberType::PERSONAL_NUMBER:
+            json_set_s_for_key(info, L"phoneNumberType", "PERSONAL_NUMBER");
+            break;
+            case PhoneNumberUtil::PhoneNumberType::PAGER:
+            json_set_s_for_key(info, L"phoneNumberType", "PAGER");
+            break;
+            case PhoneNumberUtil::PhoneNumberType::UAN:
+            json_set_s_for_key(info, L"phoneNumberType", "UAN");
+            break;
+            case PhoneNumberUtil::PhoneNumberType::VOICEMAIL:
+            json_set_s_for_key(info, L"phoneNumberType", "VOICEMAIL");
+            break;
+            default://UNKNOWN
+            json_set_s_for_key(info, L"phoneNumberType", "UNKNOWN");
+            break;
+        }
+        
+        json_set_s_for_key(info, L"INTERNATIONAL", formatted_number_INTERNATIONAL.c_str());
+        json_set_s_for_key(info, L"NATIONAL", formatted_number_NATIONAL.c_str());
+        json_set_s_for_key(info, L"RFC3966", formatted_number_RFC3966.c_str());
+        json_set_s_for_key(info, L"E164", formatted_number_E164.c_str());
         
         CUTF16String json;
         json_stringify(info, json, false);
         returnValue.setUTF16String(&json);
         
-		json_delete(info);
+        json_delete(info);
+#endif
+        
 	}else
 	{
 		//parse error
 	}
+    
+    returnValue.setReturn(pResult);
 }
 
