@@ -498,7 +498,7 @@
 				PRODUCT_NAME = phonenumber;
 				SDKROOT = macosx10.11;
 				SECTORDER_FLAGS = "";
-				USER_HEADER_SEARCH_PATHS = "include include/libjson";
+				USER_HEADER_SEARCH_PATHS = "include include/mac";
 				WARNING_CFLAGS = (
 					"-Wmost",
 					"-Wno-four-char-constants",
@@ -538,7 +538,7 @@
 				PRODUCT_NAME = phonenumber;
 				SDKROOT = macosx10.11;
 				SECTORDER_FLAGS = "";
-				USER_HEADER_SEARCH_PATHS = "include include/libjson";
+				USER_HEADER_SEARCH_PATHS = "include include/mac";
 				WARNING_CFLAGS = (
 					"-Wmost",
 					"-Wno-four-char-constants",
@@ -576,7 +576,7 @@
 				PRODUCT_NAME = phonenumber;
 				SDKROOT = macosx10.11;
 				SECTORDER_FLAGS = "";
-				USER_HEADER_SEARCH_PATHS = "include include/libjson";
+				USER_HEADER_SEARCH_PATHS = "include include/mac";
 				WARNING_CFLAGS = (
 					"-Wmost",
 					"-Wno-four-char-constants",
@@ -628,7 +628,7 @@
 				OBJROOT = "$(SRCROOT)/build";
 				SDKROOT = macosx10.9;
 				SYMROOT = "$(SRCROOT)/$(PRODUCT_NAME).4dbase/Plugins";
-				USER_HEADER_SEARCH_PATHS = include;
+				USER_HEADER_SEARCH_PATHS = "include include/mac";
 			};
 			name = Development;
 		};
@@ -674,7 +674,7 @@
 				OBJROOT = "$(SRCROOT)/build";
 				SDKROOT = macosx10.9;
 				SYMROOT = "$(SRCROOT)/$(PRODUCT_NAME).4dbase/Plugins";
-				USER_HEADER_SEARCH_PATHS = include;
+				USER_HEADER_SEARCH_PATHS = "include include/mac";
 			};
 			name = Deployment;
 		};
@@ -718,7 +718,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				SDKROOT = macosx10.9;
 				SYMROOT = "$(SRCROOT)/$(PRODUCT_NAME).4dbase/Plugins";
-				USER_HEADER_SEARCH_PATHS = include;
+				USER_HEADER_SEARCH_PATHS = "include include/mac";
 			};
 			name = Default;
 		};
