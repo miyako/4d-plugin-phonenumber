@@ -10,7 +10,6 @@
 
 #include "4DPluginAPI.h"
 
-#include "phonenumbers/phonenumber.h"
 #include "phonenumbers/phonenumberutil.h"
 #include "phonenumbers/geocoding/phonenumber_offline_geocoder.h"
 
@@ -19,10 +18,6 @@
 #if USE_JSONCPP
 #include "json/json.h"
 void convertFromString(std::string &fromString, CUTF16String &toString);
-#else
-#include "libjson/libjson.h"
-#include "libjson_methods.h"
-#include <mutex>
 #endif
 
 // --- Phone Number
