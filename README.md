@@ -11,6 +11,8 @@
 macOS version: `8.12.21`
 Windows version: `-` **TODO**: update 
 
+**TODO**: native object support
+
 ## Features
 
 Only the ``PhoneNumberOfflineGeocoder`` feature is available. It seems ``PhoneNumberToCarrierMapper`` and ``PhoneNumberToTimeZonesMapper`` are for Java only. 
