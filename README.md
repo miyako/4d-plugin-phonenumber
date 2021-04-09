@@ -8,6 +8,9 @@
 # 4d-plugin-phonenumber
 4D implementation of [libphonenumber](https://github.com/googlei18n/libphonenumber) from Google
 
+macOS version: `8.12.21`
+Windows version: `-`
+
 ## Features
 
 Only the ``PhoneNumberOfflineGeocoder`` feature is available. It seems ``PhoneNumberToCarrierMapper`` and ``PhoneNumberToTimeZonesMapper`` are for Java only. 
