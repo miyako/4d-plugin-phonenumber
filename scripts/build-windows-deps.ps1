@@ -141,6 +141,8 @@ cmake -S 'deps/libphonenumber/cpp' -B $BuildDir -G $generator -A x64 -T v143 `
     -DCMAKE_BUILD_TYPE=Release `
     -DCMAKE_PREFIX_PATH="$VcpkgPrefix" `
     "-DCMAKE_POLICY_VERSION_MINIMUM=3.5" `
+    -DCMAKE_CXX_STANDARD=17 `
+    "-DCMAKE_CXX_FLAGS=-DNOMINMAX" `
     -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded `
     -DBUILD_GEOCODER=ON `
     -DUSE_BOOST=OFF `
