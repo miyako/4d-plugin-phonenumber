@@ -228,11 +228,9 @@ void Parse_phone_number(sLONG_PTR *pResult, PackagePtr pParams)
                 {
                     case phonenumber_option_language:
                         language = it->asString();
-                        locale = Locale(language.c_str(), region.length() ? region.c_str() : 0);
                     break;
                     case phonenumber_option_region:
                         region = it->asString();
-                        locale = Locale(language.c_str(), region.length() ? region.c_str() : 0);
                     break;
                     case phonenumber_option_user_region:
                         user_region = it->asString();
@@ -245,6 +243,11 @@ void Parse_phone_number(sLONG_PTR *pResult, PackagePtr pParams)
                 }
             }
         }
+    }
+    
+    if(language.length())
+    {
+        locale = Locale(language.c_str(), region.length() ? region.c_str() : 0);
     }
 #else
     std::lock_guard<std::mutex> lock(mutexJson);
