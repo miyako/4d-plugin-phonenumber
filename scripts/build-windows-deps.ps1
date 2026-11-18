@@ -124,6 +124,20 @@ $BuildDir = Join-Path $PWD 'deps/libphonenumber-build'
 $LibOut = Join-Path $PWD 'lib/windows64'
 New-Item -ItemType Directory -Force -Path $LibOut | Out-Null
 
+# The CMakeCache.txt inside the build dir pins the configure options used last
+# time, and actions/cache restore-keys can resurrect a build dir configured by
+# an older script. Stamp the dir with this script's hash and wipe it on
+# mismatch (same pattern as the vcpkg-ref stamp above) so a flag/option fix is
+# actually re-applied instead of being silently masked by a stale cache.
+$buildStamp = 'deps/.libphonenumber-build-ref'
+$buildStampOk = (Test-Path $buildStamp) -and
+    ((Get-Content $buildStamp -Raw).Trim() -eq (Get-FileHash $PSCommandPath -Algorithm SHA256).Hash)
+if ((Test-Path $BuildDir) -and -not $buildStampOk) {
+    Write-Host "cached libphonenumber build was configured by a different script - wiping it"
+    Remove-Item -Recurse -Force $BuildDir
+}
+New-Item -ItemType Directory -Force -Path $BuildDir | Out-Null
+
 # pick the newest Visual Studio generator cmake knows about (windows-latest
 # may carry VS2022, VS18, or both)
 $generator = (cmake --help | Select-String -Pattern 'Visual Studio (\d+) (\d{4})' -AllMatches |
@@ -137,12 +151,16 @@ $icuI18nPath = Join-Path $VcpkgLib $i18nLib
 $icuUcPath = Join-Path $VcpkgLib 'icuuc.lib'
 $protobufPath = Join-Path $VcpkgLib 'libprotobuf.lib'
 
+# APPEND NOMINMAX rather than replacing the MSVC defaults: -DCMAKE_CXX_FLAGS
+# clobbers the platform flags (/DWIN32 /D_WINDOWS /W3 /GR /EHsc) and dropping
+# /DWIN32 makes libphonenumber's thread_checker.h #error out with
+# "Building without Boost, please provide -DI18N_PHONENUMBERS_NO_THREAD_SAFETY".
 cmake -S 'deps/libphonenumber/cpp' -B $BuildDir -G $generator -A x64 -T v143 `
     -DCMAKE_BUILD_TYPE=Release `
     -DCMAKE_PREFIX_PATH="$VcpkgPrefix" `
     "-DCMAKE_POLICY_VERSION_MINIMUM=3.5" `
     -DCMAKE_CXX_STANDARD=17 `
-    "-DCMAKE_CXX_FLAGS=-DNOMINMAX" `
+    "-DCMAKE_CXX_FLAGS_INIT=-DNOMINMAX" `
     -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded `
     -DBUILD_GEOCODER=ON `
     -DUSE_BOOST=OFF `
@@ -159,6 +177,7 @@ cmake -S 'deps/libphonenumber/cpp' -B $BuildDir -G $generator -A x64 -T v143 `
     "-DPROTOBUF_INCLUDE_DIR=$VcpkgPrefix/include" `
     "-DPROTOC_BIN=$($protoc.FullName)"
 if ($LASTEXITCODE -ne 0) { throw "cmake configure failed ($LASTEXITCODE)" }
+Set-Content -Path $buildStamp -Value (Get-FileHash $PSCommandPath -Algorithm SHA256).Hash -NoNewline
 
 cmake --build $BuildDir --config Release --target phonenumber geocoding
 if ($LASTEXITCODE -ne 0) { throw "cmake build failed ($LASTEXITCODE)" }
