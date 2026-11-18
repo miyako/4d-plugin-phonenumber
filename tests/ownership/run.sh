@@ -4,7 +4,7 @@
 #
 #   tests/ownership/run.sh <plugin-source-dir> <fixed|baseline>
 #
-# <plugin-source-dir> (the repository's phonenumber/ folder) provides the
+# <plugin-source-dir> (the repository root) provides the
 # plugin sources, the vendored libraries and the bundled 4D Plugin API.
 # The harness itself always comes from this script's directory, so the SAME
 # harness can be run against an immutable baseline (git archive of the base

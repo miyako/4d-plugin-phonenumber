@@ -1,6 +1,6 @@
 # Ownership regressions
 
-`engine_harness.mm` links the real `phonenumber/4DPlugin.cpp`, the vendored static libraries the Xcode target links (`phonenumber/a/*.a`), the plugin classes and the unchanged bundled `4D Plugin API` with ASan/UBSan. It also replaces the 4D engine (`Call4D`) with a synthetic one. That engine counts live engine strings, handles and reference-counted pictures, and aborts on anything it does not model.
+`engine_harness.mm` links the real `4DPlugin.cpp`, the vendored static libraries the Xcode target links (`a/*.a`), the plugin classes and the unchanged bundled `4D Plugin API` with ASan/UBSan. It also replaces the 4D engine (`Call4D`) with a synthetic one. That engine counts live engine strings, handles and reference-counted pictures, and aborts on anything it does not model.
 
 `Parse phone number` runs through `PluginMain` with synthetic numbers and options.
 

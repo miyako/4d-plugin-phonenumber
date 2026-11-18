@@ -17,4 +17,4 @@ jobs:
         with:
           persist-credentials: false
       - name: ASan/UBSan synthetic-boundary harness
-        run: tests/ownership/run.sh phonenumber fixed
+        run: tests/ownership/run.sh . fixed

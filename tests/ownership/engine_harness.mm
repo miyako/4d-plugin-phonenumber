@@ -1,7 +1,7 @@
 /*
  * Synthetic 4D engine boundary for phonenumber ownership regressions.
  *
- * Links the real plugin source (phonenumber/4DPlugin.cpp) and the vendored
+ * Links the real plugin source (4DPlugin.cpp) and the vendored
  * static libraries the Xcode target links (a/*.a), the plugin classes
  * (4D Plugin API/Classes) and the bundled, unmodified 4D Plugin API
  * (4DPluginAPI.c). Only gCall4D is replaced: it models engine-side
