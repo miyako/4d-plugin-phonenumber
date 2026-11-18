@@ -46,7 +46,7 @@ if (-not (Test-Path 'vcpkg-overlay/protobuf')) {
 }
 
 $env:VCPKG_PLATFORM_TOOLSET = 'v143'   # match the toolset the plugin builds with
-& '.\vcpkg\vcpkg.exe' install --triplet $TRIPLET --overlay-ports=vcpkg-overlay protobuf icu jsoncpp
+& '.\vcpkg\vcpkg.exe' install --triplet $TRIPLET --overlay-ports=vcpkg-overlay protobuf icu jsoncpp gtest
 if ($LASTEXITCODE -ne 0) { throw "vcpkg install failed ($LASTEXITCODE)" }
 
 $VcpkgPrefix = Join-Path $PWD 'vcpkg/installed/x64-windows-static'
@@ -97,7 +97,7 @@ $protobufPath = Join-Path $VcpkgLib 'libprotobuf.lib'
 cmake -S 'deps/libphonenumber/cpp' -B $BuildDir -G $generator -A x64 -T v143 `
     -DCMAKE_BUILD_TYPE=Release `
     -DCMAKE_PREFIX_PATH="$VcpkgPrefix" `
-    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 `
+    "-DCMAKE_POLICY_VERSION_MINIMUM=3.5" `
     -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded `
     -DBUILD_GEOCODER=ON `
     -DUSE_BOOST=OFF `
