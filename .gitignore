@@ -10,3 +10,9 @@ xcuserdata/
 UserInterfaceState.xcuserstate
 *.xcuserstate
 DerivedData/
+
+# Windows CI dependency build (scripts/build-windows-deps.ps1)
+/vcpkg/
+/deps/
+/lib/
+/Objs/

@@ -10,7 +10,7 @@
 4D implementation of [libphonenumber](https://github.com/googlei18n/libphonenumber) from Google. It runs entirely offline against the library's bundled metadata — no network access is needed.
 
 macOS version: `8.12.21`
-Windows version: `-` **TODO**: libraries update
+Windows version: `8.12.21` (built in CI from source)
 
 **TODO**: native object support
 
@@ -22,7 +22,7 @@ Only the `PhoneNumberOfflineGeocoder` feature is available. It seems `PhoneNumbe
 |---|---|---|
 | [Parse phone number](#parse-phone-number) | `Text` (JSON) | Parse a phone number and return its formatted versions, type, and geographic description |
 
-**Platforms:** macOS (universal: Intel and Apple silicon, macOS 11.5+) · Windows 64-bit (prebuilt binary)
+**Platforms:** macOS (universal: Intel and Apple silicon, macOS 11.5+) · Windows 64-bit
 
 ---
 
@@ -31,7 +31,7 @@ Only the `PhoneNumberOfflineGeocoder` feature is available. It seems `PhoneNumbe
 - **Two parameters are always read.** Pass `{}` as `params` when you don't need any options — an empty or non-JSON `params` string is silently ignored and the defaults are used.
 - **Failure is silent, not a 4D error.** If the number cannot be parsed, the command returns an empty text — there is no error to catch. Check the result for `""` before parsing the JSON.
 - **The result is pretty-printed JSON text**, not a 4D object. On 4D v20+, feed it to `JSON Parse` (check your Language Reference for the exact syntax on your version) to get an object; on earlier versions, parse the text yourself.
-- **Windows ships a prebuilt binary** that is not rebuilt by the release workflow; its bundled libphonenumber version is older than the macOS build.
+- **Windows x64 is built in CI** from the same libphonenumber 8.12.21 sources as macOS; the first release built this way may differ from the previously shipped prebuilt binary.
 
 ---
 
@@ -113,7 +113,7 @@ End for each
 - **Bad `params` JSON is ignored.** If `params` isn't a valid JSON object, all defaults apply — `default_region` stays `"ZZ"`, so local-format numbers will fail unless they include a country code.
 - **`region` without `language` does nothing.** The locale only changes when `language` is set; `region` alone is ignored.
 - **Descriptions depend on the bundled metadata.** The offline geocoder's coverage and language data are fixed at build time (libphonenumber 8.12.21 on macOS); there is no way to update them without a plugin update.
-- **Windows binary is stale.** The prebuilt Windows64 binary predates the current libphonenumber and is not covered by the macOS release pipeline — treat Windows results as best-effort.
+- **Windows results are unverified.** The Windows x64 binary is compiled in CI but has not been exercised inside 4D; treat Windows results as best-effort until tested.
 
 ---
 
