@@ -1,5 +1,5 @@
 # Builds the Windows x64 dependencies for phonenumber.4DX on windows-latest:
-#   vcpkg (pinned baseline) -> protobuf 3.21.12, icu 73.1, jsoncpp 1.9.5
+#   vcpkg (pinned baseline) -> protobuf 3.21.12 (overlay), icu 79.1, jsoncpp 1.9.6, gtest
 #   libphonenumber v8.12.21 (cmake, geocoder ON, std::mutex, no boost/re2)
 # Outputs land in lib/windows64/*.lib, which phonenumber.vcxproj links via
 # $(SolutionDir)lib\windows64. Everything is idempotent: actions/cache restores
@@ -77,6 +77,40 @@ if (-not (Test-Path 'deps/libphonenumber')) {
     git clone --depth 1 --branch $LIBPHONENUMBER_REF https://github.com/google/libphonenumber.git deps/libphonenumber
 }
 
+# libphonenumber's CMake build generates src/phonenumbers/geocoding/
+# geocoding_data.cc by compiling tools/cpp/generate_geocoding_data, which uses
+# POSIX-only dirent.h and cannot build under MSVC. Ship a pre-generated copy
+# (produced from the pinned v8.12.21 resources on a POSIX host) and strip the
+# generation rules from the CMake files so the static libs compile the checked-in
+# file directly.
+$geoOut = 'deps/libphonenumber/cpp/src/phonenumbers/geocoding/geocoding_data.cc'
+if (-not (Test-Path $geoOut)) {
+    $geoGz = 'windows-deps/libphonenumber-geocoding_data.cc.gz'
+    if (-not (Test-Path $geoGz)) { throw "missing $geoGz" }
+    Add-Type -AssemblyName System.IO.Compression
+    $in = [System.IO.File]::OpenRead($geoGz)
+    try {
+        $gz = New-Object System.IO.Compression.GzipStream($in, [System.IO.Compression.CompressionMode]::Decompress)
+        try {
+            $out = [System.IO.File]::Create($geoOut)
+            try { $gz.CopyTo($out) } finally { $out.Close() }
+        } finally { $gz.Close() }
+    } finally { $in.Close() }
+    Write-Host "installed pre-generated geocoding_data.cc"
+}
+
+$cmPath = 'deps/libphonenumber/cpp/CMakeLists.txt'
+$cm = [System.IO.File]::ReadAllText($cmPath)
+$cm = $cm -replace '(?ms)^\s*add_subdirectory\("\$\{CMAKE_CURRENT_SOURCE_DIR\}/\.\./tools/cpp".*?\r?\n', ''
+$cm = $cm -replace '(?ms)add_custom_command\s*\(\s*COMMAND generate_geocoding_data.*?\n\s*\)\s*', ''
+$cm = $cm -replace '(?m)^\s*add_dependencies\s*\([^)]*generate_geocoding_data[^)]*\)\s*\r?\n', ''
+if ($cm -match 'add_subdirectory.*tools/cpp' -or
+    $cm -match 'add_dependencies\s*\([^)]*generate_geocoding_data' -or
+    $cm -match 'add_custom_command\s*\(\s*COMMAND generate_geocoding_data') {
+    throw "CMakeLists patch incomplete - generate_geocoding_data still referenced"
+}
+[System.IO.File]::WriteAllText($cmPath, $cm)
+
 $BuildDir = Join-Path $PWD 'deps/libphonenumber-build'
 $LibOut = Join-Path $PWD 'lib/windows64'
 New-Item -ItemType Directory -Force -Path $LibOut | Out-Null
@@ -115,7 +149,7 @@ cmake -S 'deps/libphonenumber/cpp' -B $BuildDir -G $generator -A x64 -T v143 `
     "-DPROTOC_BIN=$($protoc.FullName)"
 if ($LASTEXITCODE -ne 0) { throw "cmake configure failed ($LASTEXITCODE)" }
 
-cmake --build $BuildDir --config Release
+cmake --build $BuildDir --config Release --target phonenumber geocoding
 if ($LASTEXITCODE -ne 0) { throw "cmake build failed ($LASTEXITCODE)" }
 
 # collect the two static libs the plugin links
