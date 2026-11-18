@@ -15,10 +15,18 @@ $LIBPHONENUMBER_REF = 'v8.12.21'   # matches the macOS build (README)
 $TRIPLET = 'x64-windows-static'
 
 # --- vcpkg -------------------------------------------------------------------
+# actions/cache restore-keys can resurrect a vcpkg cloned at an older ref;
+# the stamp file makes a stale restore detectable instead of silently reused.
+$stamp = 'vcpkg/.vcpkg-ref'
+$stampOk = (Test-Path $stamp) -and ((Get-Content $stamp -Raw).Trim() -eq $VCPKG_REF)
+if ((Test-Path 'vcpkg') -and -not $stampOk) {
+    Write-Host "cached vcpkg missing or at a different ref - recloning"
+    Remove-Item -Recurse -Force vcpkg
+}
 if (-not (Test-Path 'vcpkg/vcpkg.exe')) {
-    if (-not (Test-Path 'vcpkg')) {
-        git clone --depth 1 --branch $VCPKG_REF https://github.com/microsoft/vcpkg.git vcpkg
-    }
+    git clone --depth 1 --branch $VCPKG_REF https://github.com/microsoft/vcpkg.git vcpkg
+    if ($LASTEXITCODE -ne 0) { throw "vcpkg clone failed ($LASTEXITCODE)" }
+    Set-Content -Path $stamp -Value $VCPKG_REF -NoNewline
     & '.\vcpkg\bootstrap-vcpkg.bat' -disableMetrics
     if ($LASTEXITCODE -ne 0) { throw "vcpkg bootstrap failed ($LASTEXITCODE)" }
 }
