@@ -9,7 +9,8 @@
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot/..
 
-$VCPKG_REF = '2023.10.19'          # baseline: protobuf 3.21.12 / icu 73.1 / jsoncpp 1.9.5
+$VCPKG_REF = '2026.10.16'          # current baseline (icu 79.1 / jsoncpp 1.9.6)
+$VCPKG_PORTS_REF = '2023.10.19'    # baseline whose protobuf port is 3.21.12
 $LIBPHONENUMBER_REF = 'v8.12.21'   # matches the macOS build (README)
 $TRIPLET = 'x64-windows-static'
 
@@ -22,8 +23,22 @@ if (-not (Test-Path 'vcpkg/vcpkg.exe')) {
     if ($LASTEXITCODE -ne 0) { throw "vcpkg bootstrap failed ($LASTEXITCODE)" }
 }
 
+# protobuf must stay on 3.21.x: the .pb.cc files libphonenumber generates at
+# build time are only compatible with a protobuf 3.x runtime. The current
+# vcpkg ships protobuf 7.x, so overlay the 3.21.12 port from an old baseline.
+if (-not (Test-Path 'vcpkg-overlay/protobuf')) {
+    if (-not (Test-Path 'vcpkg-overlay-src')) {
+        git clone --depth 1 --filter=blob:none --sparse --branch $VCPKG_PORTS_REF `
+            https://github.com/microsoft/vcpkg.git vcpkg-overlay-src
+        & git -C vcpkg-overlay-src sparse-checkout set ports/protobuf
+        if ($LASTEXITCODE -ne 0) { throw "sparse checkout failed ($LASTEXITCODE)" }
+    }
+    New-Item -ItemType Directory -Force -Path vcpkg-overlay | Out-Null
+    Copy-Item -Recurse -Force 'vcpkg-overlay-src/ports/protobuf' 'vcpkg-overlay/protobuf'
+}
+
 $env:VCPKG_PLATFORM_TOOLSET = 'v143'   # match the toolset the plugin builds with
-& '.\vcpkg\vcpkg.exe' install --triplet $TRIPLET protobuf icu jsoncpp
+& '.\vcpkg\vcpkg.exe' install --triplet $TRIPLET --overlay-ports=vcpkg-overlay protobuf icu jsoncpp
 if ($LASTEXITCODE -ne 0) { throw "vcpkg install failed ($LASTEXITCODE)" }
 
 $VcpkgPrefix = Join-Path $PWD 'vcpkg/installed/x64-windows-static'

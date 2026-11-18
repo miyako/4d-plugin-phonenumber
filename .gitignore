@@ -13,6 +13,8 @@ DerivedData/
 
 # Windows CI dependency build (scripts/build-windows-deps.ps1)
 /vcpkg/
+/vcpkg-overlay/
+/vcpkg-overlay-src/
 /deps/
 /lib/
 /Objs/
