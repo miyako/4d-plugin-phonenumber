@@ -99,6 +99,15 @@ if (-not (Test-Path $geoOut)) {
     Write-Host "installed pre-generated geocoding_data.cc"
 }
 
+# The test tree lists a generated geocoding_test_data.cc that the removed
+# custom command would have produced; CMake requires every listed source to
+# exist at generate time even though we never build the test targets.
+$geoTestOut = 'deps/libphonenumber/cpp/test/phonenumbers/geocoding/geocoding_test_data.cc'
+if (-not (Test-Path $geoTestOut)) {
+    New-Item -ItemType Directory -Force -Path (Split-Path $geoTestOut) | Out-Null
+    Set-Content -Path $geoTestOut -Value '// placeholder: test data is never built on Windows' -NoNewline
+}
+
 $cmPath = 'deps/libphonenumber/cpp/CMakeLists.txt'
 $cm = [System.IO.File]::ReadAllText($cmPath)
 $cm = $cm -replace '(?ms)^\s*add_subdirectory\("\$\{CMAKE_CURRENT_SOURCE_DIR\}/\.\./tools/cpp".*?\r?\n', ''
