@@ -94,7 +94,7 @@ $icuI18nPath = Join-Path $VcpkgLib $i18nLib
 $icuUcPath = Join-Path $VcpkgLib 'icuuc.lib'
 $protobufPath = Join-Path $VcpkgLib 'libprotobuf.lib'
 
-cmake -S 'deps/libphonenumber/cpp' -B $BuildDir -G "Visual Studio $generator" -A x64 -T v143 `
+cmake -S 'deps/libphonenumber/cpp' -B $BuildDir -G $generator -A x64 -T v143 `
     -DCMAKE_BUILD_TYPE=Release `
     -DCMAKE_PREFIX_PATH="$VcpkgPrefix" `
     -DCMAKE_POLICY_VERSION_MINIMUM=3.5 `
