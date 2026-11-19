@@ -155,10 +155,17 @@ $protobufPath = Join-Path $VcpkgLib 'libprotobuf.lib'
 # clobbers the platform flags (/DWIN32 /D_WINDOWS /W3 /GR /EHsc) and dropping
 # /DWIN32 makes libphonenumber's thread_checker.h #error out with
 # "Building without Boost, please provide -DI18N_PHONENUMBERS_NO_THREAD_SAFETY".
-cmake -S 'deps/libphonenumber/cpp' -B $BuildDir -G $generator -A x64 -T v143 `
+# -T v145 (MSVC 14.5x, VS18 default) must match the toolset vcpkg auto-picks
+# for the static triplet: mixing MSVC versions across libs in one binary fails
+# to link with LNK2001 on the newer STL's internal helpers (__std_rotate,
+# __std_find_last_not_ch_pos_1). CMAKE_POLICY_VERSION_MINIMUM=3.15 flips CMP0091
+# (a 3.15 policy) to NEW; with the old 3.5 floor it is OLD, CMake bakes /MD into
+# the Release flags, -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded is ignored, and
+# the resulting MD_DynamicRelease phonenumber.lib LNK2038s against the /MT plugin.
+cmake -S 'deps/libphonenumber/cpp' -B $BuildDir -G $generator -A x64 -T v145 `
     -DCMAKE_BUILD_TYPE=Release `
     -DCMAKE_PREFIX_PATH="$VcpkgPrefix" `
-    "-DCMAKE_POLICY_VERSION_MINIMUM=3.5" `
+    "-DCMAKE_POLICY_VERSION_MINIMUM=3.15" `
     -DCMAKE_CXX_STANDARD=17 `
     "-DCMAKE_CXX_FLAGS_INIT=-DNOMINMAX" `
     -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded `

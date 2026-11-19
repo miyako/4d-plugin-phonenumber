@@ -120,7 +120,9 @@ jobs:
       # (UseOfMfc, uafxcw*.lib or an #include <afx...>) get the ATLMFC
       # component, which installs into the default MSVC only, so they build with
       # the toolset whose MSVC folder actually has afxwin.h. Everything else
-      # builds with v143. (office-automation, 2026-11-08)
+      # builds with v145, the toolset vcpkg auto-picks for the static triplet;
+      # build-windows-deps.ps1 passes -T v145 likewise, so the whole binary is
+      # one MSVC 14.5x. (office-automation, 2026-11-08; v145 default 2026-11-19)
       - name: select toolset (install ATL/MFC if the plugin uses it)
         shell: pwsh
         run: |
@@ -129,7 +131,7 @@ jobs:
             $usesMfc = [bool](Get-ChildItem -Path . -Recurse -Include *.h,*.hpp,*.c,*.cpp |
               Select-String -Pattern '#include[ ]*[<"]afx' -List)
           }
-          $toolset = 'v143'
+          $toolset = 'v145'
           if ($usesMfc) {
             $installerDir = "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer"
             $vsPath = & "$installerDir/vswhere.exe" -latest -products * -property installationPath
